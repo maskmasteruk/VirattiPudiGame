@@ -93,11 +93,15 @@ export class Player {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowLeft' || e.key === 'a') this.keys.left = true;
       if (e.key === 'ArrowRight' || e.key === 'd') this.keys.right = true;
+      if (e.key === 'ArrowUp' || e.key === 'w') this.keys.up = true;
+      if (e.key === 'ArrowDown' || e.key === 's') this.keys.down = true;
     });
 
     window.addEventListener('keyup', (e) => {
       if (e.key === 'ArrowLeft' || e.key === 'a') this.keys.left = false;
       if (e.key === 'ArrowRight' || e.key === 'd') this.keys.right = false;
+      if (e.key === 'ArrowUp' || e.key === 'w') this.keys.up = false;
+      if (e.key === 'ArrowDown' || e.key === 's') this.keys.down = false;
     });
 
     window.addEventListener('touchstart', (e) => {

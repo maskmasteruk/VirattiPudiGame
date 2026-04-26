@@ -18,27 +18,29 @@ export class Enemy {
     this.dogGroup.add(this.body);
     
     this.head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.5), this.dogMat);
-    this.head.position.set(0, 0.4, 0.7);
+    this.head.position.set(0, 0.4, -0.7); // Changed from 0.7 to -0.7 to face forward
     this.head.castShadow = true;
     this.body.add(this.head);
     
     // Legs
     const legGeo = new THREE.BoxGeometry(0.15, 0.5, 0.15);
     
+    // Front Legs (closer to head at -Z)
     this.legFL = new THREE.Mesh(legGeo, this.dogMat);
-    this.legFL.position.set(-0.2, -0.25, 0.4);
+    this.legFL.position.set(-0.2, -0.25, -0.4);
     this.body.add(this.legFL);
     
     this.legFR = new THREE.Mesh(legGeo, this.dogMat);
-    this.legFR.position.set(0.2, -0.25, 0.4);
+    this.legFR.position.set(0.2, -0.25, -0.4);
     this.body.add(this.legFR);
     
+    // Back Legs (further back at +Z)
     this.legBL = new THREE.Mesh(legGeo, this.dogMat);
-    this.legBL.position.set(-0.2, -0.25, -0.4);
+    this.legBL.position.set(-0.2, -0.25, 0.4);
     this.body.add(this.legBL);
     
     this.legBR = new THREE.Mesh(legGeo, this.dogMat);
-    this.legBR.position.set(0.2, -0.25, -0.4);
+    this.legBR.position.set(0.2, -0.25, 0.4);
     this.body.add(this.legBR);
     
     this.scene.add(this.dogGroup);
@@ -70,6 +72,7 @@ export class Enemy {
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(dataUrl, (texture) => {
       texture.center.set(0.5, 0.5);
+      // No rotation needed for -Z facing
       this.customDogMat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.5 });
       this.head.material = this.customDogMat;
     });
@@ -113,8 +116,6 @@ export class Enemy {
   }
 
   reset() {
-    this.targetZ = 15;
-    this.currentZ = 15;
     this.dogGroup.position.set(0, 0, this.currentZ);
   }
 }

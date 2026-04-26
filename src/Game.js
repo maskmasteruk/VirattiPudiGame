@@ -51,6 +51,13 @@ export class Game {
     this.clock = new THREE.Clock();
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
+    
+    // Intro Setup
+    this.enemies.currentZ = 2; // Dog right behind player initially
+    this.enemies.targetZ = 2;
+    this.camera.position.set(2, 2, 4); // Side cinematic view
+    this.camera.lookAt(0, 1, 0); // Looking at player
+    
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -66,9 +73,14 @@ export class Game {
     this.player.reset();
     this.environment.reset();
     this.enemies.reset();
+    this.enemies.targetZ = 15; // Dog falls back as run begins
     this.obstacles.reset();
     
     this.lastObstacleSpawn = 0;
+
+    // Reset Camera to running view
+    this.camera.position.set(0, 5, 8); 
+    this.camera.lookAt(0, 0, -10);
 
     this.clock.start();
     this.audio.startEngine();
@@ -79,6 +91,12 @@ export class Game {
     this.isActive = false;
     this.audio.stopEngine();
     this.audio.playCrash();
+    
+    // Zoom in on the tragic end
+    this.camera.position.set(this.player.mesh.position.x + 3, 3, this.player.mesh.position.z + 5);
+    this.camera.lookAt(this.player.mesh.position.x, 1, this.player.mesh.position.z);
+    this.renderer.render(this.scene, this.camera);
+    
     this.onGameOver();
   }
 
@@ -140,8 +158,17 @@ export class Game {
     const dt = this.clock.getDelta();
     const safeDt = Math.min(dt, 0.1);
 
-    // Difficulty scaling
-    this.speedMultiplier += safeDt * 0.005;
+    // Difficulty scaling and manual speed control
+    if (this.player.keys.up) {
+      this.speedMultiplier += safeDt * 0.2; // Accelerate manually
+    } else if (this.player.keys.down) {
+      this.speedMultiplier -= safeDt * 0.2; // Decelerate manually
+    } else {
+      this.speedMultiplier += safeDt * 0.005; // Auto accelerate slowly
+    }
+    
+    // Clamp speed multiplier between 0.5 (slow) and 3.0 (very fast)
+    this.speedMultiplier = Math.max(0.5, Math.min(3.0, this.speedMultiplier));
     
     // Recovery Logic
     if (this.isStumbled) {

@@ -7,6 +7,10 @@ export class ObstacleManager {
     this.obstacles = [];
     this.spawnZ = -150; 
     this.currentTheme = 'city_day';
+    
+    const textureLoader = new THREE.TextureLoader();
+    this.autoTex = textureLoader.load('./auto_rickshaw_tex.png');
+    this.barricadeTex = textureLoader.load('./barricade_tex.png');
   }
 
   setTheme(theme) {
@@ -60,17 +64,26 @@ export class ObstacleManager {
       }
     } else { // City Day / Night
       if (isBarrier) {
-        // Auto Rickshaw (simple box)
+        // Auto Rickshaw (using realistic texture)
         mesh = new THREE.Mesh(
           new THREE.BoxGeometry(2.5, 2, 3),
-          new THREE.MeshStandardMaterial({ color: 0xFFD700, roughness: 0.4 }) // Yellow
+          new THREE.MeshStandardMaterial({ 
+            map: this.autoTex,
+            color: 0xFFFFFF,
+            roughness: 0.5 
+          }) 
         );
         mesh.position.y = 1;
       } else {
-        // Barricade
+        // Barricade (using realistic texture)
         mesh = new THREE.Mesh(
           new THREE.BoxGeometry(3, 1.5, 0.5),
-          new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.6 })
+          new THREE.MeshStandardMaterial({ 
+            map: this.barricadeTex,
+            color: 0xFFFFFF, 
+            roughness: 0.6,
+            transparent: true
+          })
         );
         mesh.position.y = 0.75;
       }
@@ -105,17 +118,23 @@ export class ObstacleManager {
 
   checkCollisions() {
     const playerBox = new THREE.Box3().setFromObject(this.player.mesh);
-    playerBox.expandByScalar(-0.3); // forgiveness
+    // Only shrink slightly to avoid edge grazing
+    playerBox.expandByScalar(-0.1); 
 
     for (let obs of this.obstacles) {
       if (!obs.active) continue;
+      
       const obsBox = new THREE.Box3().setFromObject(obs.mesh);
-      obsBox.expandByScalar(-0.2);
+      
+      // For potholes, we need to artificially inflate their Y so the player's hovering legs can hit them
+      if (obs.mesh.geometry.type === 'CylinderGeometry' && obs.mesh.position.y === 0.05) {
+        obsBox.max.y += 1.0; 
+      }
+      
+      obsBox.expandByScalar(-0.1);
       
       if (playerBox.intersectsBox(obsBox)) {
-        // Once collided, don't continuously collide with same obstacle
         obs.active = false;
-        // Make obstacle fly away or disappear slightly
         obs.mesh.material.opacity = 0.5;
         obs.mesh.material.transparent = true;
         
